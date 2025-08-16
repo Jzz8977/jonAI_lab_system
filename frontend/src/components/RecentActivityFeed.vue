@@ -29,7 +29,7 @@
           
           <div class="activity-meta">
             <span class="activity-category">{{ article.category.name }}</span>
-            <span class="activity-author">by {{ article.author.username }}</span>
+            <span class="activity-author">by {{ article.author?.username }}</span>
             <span class="activity-date">{{ getRelativeTime(article.created_at) }}</span>
           </div>
           
