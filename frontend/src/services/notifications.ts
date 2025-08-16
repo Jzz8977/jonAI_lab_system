@@ -148,7 +148,7 @@ export const notificationService = {
         ? `Are you sure you want to delete "${itemName}"? This action cannot be undone.`
         : 'Are you sure you want to delete this item? This action cannot be undone.')
 
-    return this.confirm({
+    return notificationService.confirm({
       title: 'Confirm Delete',
       message,
       type: 'error',
@@ -161,7 +161,7 @@ export const notificationService = {
    * Show bulk action confirmation dialog
    */
   async confirmBulkAction(action: string, count: number): Promise<boolean> {
-    return this.confirm({
+    return notificationService.confirm({
       title: `Confirm Bulk ${action}`,
       message: `Are you sure you want to ${action.toLowerCase()} ${count} item(s)?`,
       type: 'warning',

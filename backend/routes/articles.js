@@ -4,6 +4,7 @@ const Article = require('../models/Article');
 const Category = require('../models/Category');
 const User = require('../models/User');
 const { authenticate } = require('../middleware/auth');
+const { invalidateCache } = require('../middleware/caching');
 
 // Middleware to validate article data
 const validateArticleData = (req, res, next) => {
@@ -207,6 +208,9 @@ router.post('/', authenticate, validateArticleData, validateCategory, async (req
 
     const article = await Article.create(articleData);
     
+    // Invalidate articles cache
+    invalidateCache.articles();
+    
     res.status(201).json({
       success: true,
       data: article,
@@ -314,6 +318,9 @@ router.put('/:id', authenticate, validateCategory, async (req, res) => {
     }
 
     const updatedArticle = await article.update(updateData);
+    
+    // Invalidate articles cache
+    invalidateCache.articles();
     
     res.json({
       success: true,
@@ -494,6 +501,9 @@ router.delete('/:id', authenticate, async (req, res) => {
         }
       });
     }
+    
+    // Invalidate articles cache
+    invalidateCache.articles();
     
     res.json({
       success: true,
