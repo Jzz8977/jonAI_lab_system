@@ -130,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { notificationService, confirmDelete } from '@/services/notifications'
 import { useFetch } from '@/composables/useApi'
 import { Plus, Search, Refresh, Edit, Delete, FolderOpened } from '@element-plus/icons-vue'

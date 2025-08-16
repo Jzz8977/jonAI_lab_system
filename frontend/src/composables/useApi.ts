@@ -90,7 +90,7 @@ export function useApi<T = any, Args extends any[] = any[]>(
 
   // Execute immediately if requested
   if (immediate) {
-    execute()
+    execute(...([] as any) as Args)
   }
 
   return {

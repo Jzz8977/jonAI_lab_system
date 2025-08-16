@@ -3,10 +3,8 @@
  * Tests complete user workflows from frontend to backend
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { ElMessage } from 'element-plus'
 import { articleService } from '@/services/articles'
 import { categoryService } from '@/services/categories'
 import { analyticsService } from '@/services/analytics'
@@ -188,7 +186,7 @@ describe('Frontend-Backend Integration Tests', () => {
       
       vi.mocked(articleService.getArticles).mockResolvedValue(mockResponse)
       
-      const filters = { status: 'published', page: 1, limit: 20 }
+      const filters = { status: 'published' as const, page: 1, limit: 20 }
       const result = await articleService.getArticles(filters)
       
       expect(articleService.getArticles).toHaveBeenCalledWith(filters)

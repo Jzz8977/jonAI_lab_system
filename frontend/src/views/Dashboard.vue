@@ -71,8 +71,7 @@ import { ref, onMounted, computed } from 'vue'
 import { ElSelect, ElOption } from 'element-plus'
 import { analyticsService } from '@/services/analytics'
 import { useFetch } from '@/composables/useApi'
-import { notificationService } from '@/services/notifications'
-import type { DashboardMetrics } from '@/types'
+// Types imported in analytics service
 import MetricsCard from '@/components/MetricsCard.vue'
 import TopArticlesRanking from '@/components/TopArticlesRanking.vue'
 import RecentActivityFeed from '@/components/RecentActivityFeed.vue'
@@ -84,7 +83,6 @@ const selectedDateRange = ref<'7d' | '30d' | 'all'>('30d')
 const {
   data: metrics,
   loading,
-  error,
   refresh: loadDashboardData
 } = useFetch(
   () => analyticsService.getDashboardMetrics(selectedDateRange.value),
@@ -103,12 +101,7 @@ const handleDateRangeChange = () => {
   loadDashboardData()
 }
 
-// Show success message when data loads successfully
-const handleDataLoaded = () => {
-  if (metrics.value) {
-    notificationService.success('Dashboard data updated successfully')
-  }
-}
+// Dashboard data loaded automatically
 
 onMounted(() => {
   // Data is automatically loaded by useFetch with immediate: true

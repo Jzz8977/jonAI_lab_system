@@ -4,9 +4,7 @@ import type {
   ApiResponse, 
   LoginCredentials, 
   AuthResponse, 
-  User, 
-  Article, 
-  DashboardMetrics 
+  User
 } from '@/types'
 
 // Import specialized services

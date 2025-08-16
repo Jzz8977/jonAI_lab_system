@@ -180,7 +180,7 @@
               <el-button size="small" @click="previewArticle(row)">
                 <el-icon><View /></el-icon>
               </el-button>
-              <el-dropdown @command="(command) => handleStatusAction(command, row)">
+              <el-dropdown @command="(command: string) => handleStatusAction(command, row)">
                 <el-button size="small">
                   Status <el-icon><ArrowDown /></el-icon>
                 </el-button>
@@ -313,12 +313,12 @@ const {
   items: articles,
   pagination,
   loading,
-  error,
-  loadPage,
-  changePageSize,
   refresh: loadArticles
 } = usePaginatedApi(
-  (page, limit) => articleService.getArticles({ ...filters, page, limit }),
+  async (page, limit) => {
+    const response = await articleService.getArticles({ ...filters, page, limit })
+    return { data: response.articles, pagination: response.pagination }
+  },
   1,
   20
 )
@@ -408,17 +408,15 @@ const bulkDelete = async () => {
 
 const handleStatusAction = async (command: string, article: Article) => {
   try {
-    let updatedArticle: Article
-    
     switch (command) {
       case 'published':
-        updatedArticle = await articleService.publishArticle(article.id)
+        await articleService.publishArticle(article.id)
         break
       case 'archived':
-        updatedArticle = await articleService.archiveArticle(article.id)
+        await articleService.archiveArticle(article.id)
         break
       default:
-        updatedArticle = await articleService.updateArticle(article.id, { status: command as any })
+        await articleService.updateArticle(article.id, { status: command as any })
     }
     
     notificationService.success(`Article ${command} successfully`)
