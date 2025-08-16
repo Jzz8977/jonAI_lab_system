@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Category = require('../models/Category');
 const { authenticate } = require('../middleware/auth');
-const { invalidateCache } = require('../middleware/caching');
 
 // Apply authentication middleware to all category routes
 router.use(authenticate);
@@ -122,9 +121,6 @@ router.post('/', async (req, res) => {
     const category = new Category();
     const newCategory = category.create(categoryData);
     
-    // Invalidate categories cache
-    invalidateCache.categories();
-    
     res.status(201).json({
       success: true,
       data: newCategory,
@@ -197,9 +193,6 @@ router.put('/:id', async (req, res) => {
     const category = new Category();
     const updatedCategory = category.update(parseInt(id), categoryData);
     
-    // Invalidate categories cache
-    invalidateCache.categories();
-    
     res.json({
       success: true,
       data: updatedCategory,
@@ -260,9 +253,6 @@ router.delete('/:id', async (req, res) => {
     
     const category = new Category();
     const result = category.delete(parseInt(id));
-    
-    // Invalidate categories cache
-    invalidateCache.categories();
     
     res.json({
       success: true,

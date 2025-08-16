@@ -21,8 +21,8 @@ const publicRoutes = require('./public');
 
 // Mount routes with specific middleware
 router.use('/auth', authLimiter, authRoutes);
-router.use('/articles', contentLimiter, cacheMiddleware.articles, articleRoutes);
-router.use('/categories', contentLimiter, cacheMiddleware.categories, categoryRoutes);
+router.use('/articles', contentLimiter, articleRoutes);
+router.use('/categories', contentLimiter, categoryRoutes);
 router.use('/analytics', analyticsLimiter, cacheMiddleware.analytics, analyticsRoutes);
 router.use('/upload', uploadLimiter, uploadRoutes);
 
