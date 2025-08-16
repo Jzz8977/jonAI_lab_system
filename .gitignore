@@ -3,3 +3,5 @@ frontend/package-lock.json
 frontend/node_modules
 frontend/package-lock.json
 frontend/dist
+backend/uploads
+backend/.env
