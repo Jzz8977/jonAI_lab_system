@@ -2,7 +2,7 @@ backend/node_modules
 backend/package-lock.json
 backend/uploads
 backend/.env
-backend/data
+backend/data/*
 
 
 frontend/node_modules
