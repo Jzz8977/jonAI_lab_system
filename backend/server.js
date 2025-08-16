@@ -122,6 +122,22 @@ app.use('/api/uploads', (req, res, next) => {
   }
 }, express.static('uploads'));
 
+// Also serve uploads from /uploads path (without /api prefix)
+app.use('/uploads', (req, res, next) => {
+  // Set CORS headers for image requests
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+}, express.static('uploads'));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
