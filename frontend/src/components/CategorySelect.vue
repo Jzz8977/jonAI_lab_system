@@ -9,7 +9,7 @@
     @update:model-value="handleChange"
   >
     <el-option
-      v-for="category in categories"
+      v-for="category in validCategories"
       :key="category.id"
       :label="category.name"
       :value="category.id"
@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { categoryService } from '@/services'
 import type { Category } from '@/types'
@@ -45,6 +45,11 @@ const emit = defineEmits<Emits>()
 const categories = ref<Category[]>([])
 const loading = ref(false)
 
+// Computed property to filter out null/invalid categories
+const validCategories = computed(() => {
+  return categories.value.filter(category => category && category.id && category.name)
+})
+
 const handleChange = (value: number | null) => {
   emit('update:modelValue', value)
 }
@@ -52,10 +57,12 @@ const handleChange = (value: number | null) => {
 const loadCategories = async () => {
   try {
     loading.value = true
-    categories.value = await categoryService.getCategories()
+    const response = await categoryService.getCategories()
+    categories.value = response.categories || []
   } catch (error: any) {
     console.error('Error loading categories:', error)
     ElMessage.error('Failed to load categories')
+    categories.value = []
   } finally {
     loading.value = false
   }

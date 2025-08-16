@@ -8,6 +8,8 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
+import { uploadService } from '@/services'
+import { ElMessage } from 'element-plus'
 
 interface Props {
   modelValue: string
@@ -28,6 +30,59 @@ const emit = defineEmits<Emits>()
 
 const editorContainer = ref<HTMLElement>()
 let quill: Quill | null = null
+
+// Custom image upload handler
+const handleImageUpload = () => {
+  const input = document.createElement('input')
+  input.setAttribute('type', 'file')
+  input.setAttribute('accept', 'image/jpeg,image/jpg,image/png,image/webp')
+  input.click()
+
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0]
+    if (!file) return
+
+    // Validate file
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      ElMessage.error('Please select a valid image file (JPG, PNG, WEBP)')
+      return
+    }
+
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      ElMessage.error('Image size must be less than 5MB')
+      return
+    }
+
+    try {
+      // Show loading message
+      const loadingMessage = ElMessage({
+        message: 'Uploading image...',
+        type: 'info',
+        duration: 0
+      })
+
+      // Upload image
+      const result = await uploadService.uploadThumbnail(file)
+      
+      // Close loading message
+      loadingMessage.close()
+
+      // Insert image into editor
+      if (quill) {
+        const range = quill.getSelection()
+        const index = range ? range.index : quill.getLength()
+        quill.insertEmbed(index, 'image', result.url)
+        quill.setSelection(index + 1, 0)
+      }
+
+      ElMessage.success('Image uploaded successfully')
+    } catch (error: any) {
+      ElMessage.error('Failed to upload image: ' + (error.message || 'Unknown error'))
+    }
+  })
+}
 
 const toolbarOptions = [
   [{ 'header': [1, 2, 3, false] }],
@@ -50,7 +105,12 @@ onMounted(() => {
       placeholder: props.placeholder,
       readOnly: props.readonly,
       modules: {
-        toolbar: toolbarOptions
+        toolbar: {
+          container: toolbarOptions,
+          handlers: {
+            image: handleImageUpload
+          }
+        }
       }
     })
 

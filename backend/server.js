@@ -28,6 +28,7 @@ app.use(helmet({
     }
   },
   crossOriginEmbedderPolicy: false, // Allow images from external sources
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin requests for images
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
@@ -60,12 +61,13 @@ const corsOptions = {
     
     const allowedOrigins = process.env.ALLOWED_ORIGINS 
       ? process.env.ALLOWED_ORIGINS.split(',')
-      : ['http://localhost:5173', 'http://localhost:3000'];
+      : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'];
     
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // Don't throw error, just deny access gracefully
+      callback(null, false);
     }
   },
   credentials: true,
@@ -75,7 +77,15 @@ const corsOptions = {
   maxAge: 86400 // 24 hours
 };
 
-app.use(cors(corsOptions));
+// Apply CORS middleware selectively - skip for public routes
+app.use((req, res, next) => {
+  // Skip CORS middleware for public routes (they have their own permissive CORS)
+  if (req.path.startsWith('/api/public/')) {
+    return next();
+  }
+  // Apply restrictive CORS for all other routes
+  cors(corsOptions)(req, res, next);
+});
 
 // Input sanitization middleware
 app.use(mongoSanitization);
@@ -96,8 +106,21 @@ app.use(express.urlencoded({
   parameterLimit: 100
 }));
 
-// Serve static files from uploads directory
-app.use('/api/uploads', express.static('uploads'));
+// Serve static files from uploads directory with CORS headers
+app.use('/api/uploads', (req, res, next) => {
+  // Set CORS headers for image requests
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+}, express.static('uploads'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {

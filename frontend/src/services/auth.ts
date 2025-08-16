@@ -16,7 +16,7 @@ export class AuthService {
       
       if (response.data.success && response.data.data) {
         const authData = response.data.data
-        this.setTokens(authData.token, authData.user)
+        this.setTokens(authData.tokens.access_token, authData.user)
         this.startTokenRefresh()
         return authData
       } else {

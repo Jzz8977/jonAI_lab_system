@@ -276,7 +276,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessageBox } from 'element-plus'
 import { notificationService, confirmDelete, confirmBulkAction } from '@/services/notifications'
 import { usePaginatedApi } from '@/composables/useApi'
 import { 

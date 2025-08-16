@@ -67,21 +67,8 @@ router.beforeEach(async (to, from, next) => {
   const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
   
   // Initialize auth state if not already done (only on first navigation)
-  if (from.name === undefined && !authStore.loading) {
+  if (from.name === undefined) {
     await authStore.initAuth()
-  }
-  
-  // Wait for auth initialization to complete
-  if (authStore.loading) {
-    // Create a promise that resolves when loading is complete
-    await new Promise<void>((resolve) => {
-      const unwatch = authStore.$subscribe((_mutation, state) => {
-        if (!state.loading) {
-          unwatch()
-          resolve()
-        }
-      })
-    })
   }
   
   // Apply route guards
