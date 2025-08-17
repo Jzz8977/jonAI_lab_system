@@ -3,14 +3,13 @@ const router = express.Router();
 const Article = require('../models/Article');
 const Category = require('../models/Category');
 const User = require('../models/User');
-const { authenticate } = require('../middleware/auth');
 
 // Middleware to validate article data
 const validateArticleData = (req, res, next) => {
-  // For creation, we'll set author_id from authenticated user, so don't validate it here
   const dataToValidate = { ...req.body };
-  if (req.user && req.user.id) {
-    dataToValidate.author_id = req.user.id;
+  // Set default author_id to 1 if not provided (no auth required)
+  if (!dataToValidate.author_id) {
+    dataToValidate.author_id = 1;
   }
   
   const errors = Article.validateArticleData(dataToValidate);
@@ -61,7 +60,7 @@ const validateCategory = async (req, res, next) => {
 };
 
 // GET /api/articles - List articles with pagination and filtering
-router.get('/', authenticate, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const {
       status,
@@ -122,7 +121,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // GET /api/articles/:id - Get article by ID
-router.get('/:id', authenticate, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -165,7 +164,7 @@ router.get('/:id', authenticate, async (req, res) => {
 });
 
 // GET /api/articles/slug/:slug - Get article by slug
-router.get('/slug/:slug', authenticate, async (req, res) => {
+router.get('/slug/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
     
@@ -198,11 +197,11 @@ router.get('/slug/:slug', authenticate, async (req, res) => {
 });
 
 // POST /api/articles - Create new article
-router.post('/', authenticate, validateArticleData, validateCategory, async (req, res) => {
+router.post('/', validateArticleData, validateCategory, async (req, res) => {
   try {
     const articleData = {
       ...req.body,
-      author_id: req.user.id // Set author from authenticated user
+      author_id: req.body.author_id || 1 // Set default author_id to 1 if not provided
     };
 
     const article = await Article.create(articleData);
@@ -246,7 +245,7 @@ router.post('/', authenticate, validateArticleData, validateCategory, async (req
 });
 
 // PUT /api/articles/:id - Update article
-router.put('/:id', authenticate, validateCategory, async (req, res) => {
+router.put('/:id', validateCategory, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -354,7 +353,7 @@ router.put('/:id', authenticate, validateCategory, async (req, res) => {
 });
 
 // POST /api/articles/:id/publish - Publish article
-router.post('/:id/publish', authenticate, async (req, res) => {
+router.post('/:id/publish', async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -411,7 +410,7 @@ router.post('/:id/publish', authenticate, async (req, res) => {
 });
 
 // POST /api/articles/:id/archive - Archive article
-router.post('/:id/archive', authenticate, async (req, res) => {
+router.post('/:id/archive', async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -457,7 +456,7 @@ router.post('/:id/archive', authenticate, async (req, res) => {
 });
 
 // DELETE /api/articles/:id - Delete article
-router.delete('/:id', authenticate, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     

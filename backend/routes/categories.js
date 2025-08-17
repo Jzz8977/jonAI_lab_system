@@ -1,10 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Category = require('../models/Category');
-const { authenticate } = require('../middleware/auth');
-
-// Apply authentication middleware to all category routes
-router.use(authenticate);
 
 // GET /api/categories - List all categories
 router.get('/', async (req, res) => {
