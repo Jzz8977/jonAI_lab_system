@@ -36,12 +36,12 @@ export const authService = {
 // File upload services
 export const uploadService = {
   async uploadThumbnail(file: File): Promise<{
-    filename:string, url: string 
+    filename: string, url: string 
 }> {
     const formData = new FormData()
     formData.append('thumbnail', file)
     
-    const response = await api.post<ApiResponse<{ url: string }>>('/upload/thumbnail', formData, {
+    const response = await api.post<ApiResponse<{ filename: string, url: string }>>('/upload/thumbnail', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
