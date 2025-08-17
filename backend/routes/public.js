@@ -15,6 +15,9 @@ const Category = require('../models/Category');
  * - GET /api/public/articles/slug/:slug - Get published article by slug
  * - GET /api/public/articles/recent - Get recent published articles
  * - GET /api/public/articles/popular - Get popular published articles
+ * - POST /api/public/articles/:id/view - Track article view (no auth)
+ * - POST /api/public/articles/:id/like - Toggle like status (no auth)
+ * - GET /api/public/articles/:id/like-status - Check like status (no auth)
  * - GET /api/public/categories - List all categories with pagination
  * - GET /api/public/categories/:id - Get category by ID  
  * - GET /api/public/categories/slug/:slug - Get category by slug
@@ -606,6 +609,158 @@ router.get('/search', async (req, res) => {
       error: {
         code: 'SEARCH_ERROR',
         message: 'Failed to perform search'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// POST /api/public/articles/:id/view - Track article view (no auth required)
+router.post('/analytics/articles/:id/view', async (req, res) => {
+  try {
+    const articleId = parseInt(req.params.id);
+    
+    if (isNaN(articleId)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_ARTICLE_ID',
+          message: 'Invalid article ID'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    const AnalyticsService = require('../services/analytics');
+    const getClientIP = (req) => {
+      return req.headers['x-forwarded-for'] || 
+             req.connection.remoteAddress || 
+             req.socket.remoteAddress ||
+             (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
+             '127.0.0.1';
+    };
+    
+    const ipAddress = getClientIP(req);
+    const userAgent = req.headers['user-agent'];
+    
+    const result = AnalyticsService.incrementViewCount(articleId, ipAddress, userAgent);
+    
+    res.json({
+      success: true,
+      data: result,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Public view tracking error:', error);
+    
+    const statusCode = error.message === 'Article not found' ? 404 : 500;
+    res.status(statusCode).json({
+      success: false,
+      error: {
+        code: statusCode === 404 ? 'ARTICLE_NOT_FOUND' : 'VIEW_TRACKING_ERROR',
+        message: error.message
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// POST /api/public/articles/:id/like - Toggle like status (no auth required)
+router.post('/analytics/articles/:id/status', async (req, res) => {
+  try {
+    const articleId = parseInt(req.params.id);
+    
+    if (isNaN(articleId)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_ARTICLE_ID',
+          message: 'Invalid article ID'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    const AnalyticsService = require('../services/analytics');
+    const getClientIP = (req) => {
+      return req.headers['x-forwarded-for'] || 
+             req.connection.remoteAddress || 
+             req.socket.remoteAddress ||
+             (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
+             '127.0.0.1';
+    };
+    
+    const ipAddress = getClientIP(req);
+    const userAgent = req.headers['user-agent'];
+    
+    const result = AnalyticsService.toggleLike(articleId, ipAddress, userAgent);
+    
+    res.json({
+      success: true,
+      data: result,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Public like toggle error:', error);
+    
+    const statusCode = error.message === 'Article not found' ? 404 : 500;
+    res.status(statusCode).json({
+      success: false,
+      error: {
+        code: statusCode === 404 ? 'ARTICLE_NOT_FOUND' : 'LIKE_TOGGLE_ERROR',
+        message: error.message
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// GET /api/public/articles/:id/like-status - Check if user has liked article (no auth required)
+router.get('/analytics/articles/:id/status', async (req, res) => {
+  try {
+    const articleId = parseInt(req.params.id);
+    
+    if (isNaN(articleId)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_ARTICLE_ID',
+          message: 'Invalid article ID'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    const AnalyticsService = require('../services/analytics');
+    const getClientIP = (req) => {
+      return req.headers['x-forwarded-for'] || 
+             req.connection.remoteAddress || 
+             req.socket.remoteAddress ||
+             (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
+             '127.0.0.1';
+    };
+    
+    const ipAddress = getClientIP(req);
+    const hasLiked = AnalyticsService.hasLiked(articleId, ipAddress);
+    
+    res.json({
+      success: true,
+      data: {
+        article_id: articleId,
+        has_liked: hasLiked
+      },
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Public like status check error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'LIKE_STATUS_ERROR',
+        message: 'Failed to check like status'
       },
       timestamp: new Date().toISOString()
     });
