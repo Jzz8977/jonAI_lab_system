@@ -35,7 +35,9 @@ export const authService = {
 
 // File upload services
 export const uploadService = {
-  async uploadThumbnail(file: File): Promise<{ url: string }> {
+  async uploadThumbnail(file: File): Promise<{
+    filename:string, url: string 
+}> {
     const formData = new FormData()
     formData.append('thumbnail', file)
     

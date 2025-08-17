@@ -73,7 +73,7 @@ const handleImageUpload = () => {
       if (quill) {
         const range = quill.getSelection()
         const index = range ? range.index : quill.getLength()
-        quill.insertEmbed(index, 'image', result.url)
+        quill.insertEmbed(index, 'image', window.location.origin+'/uploads/'+ result.filename)
         quill.setSelection(index + 1, 0)
       }
 
