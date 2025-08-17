@@ -8,7 +8,6 @@ const {
   analyticsLimiter, 
   uploadLimiter 
 } = require('../middleware/rateLimiting');
-const { cacheMiddleware } = require('../middleware/caching');
 const cors = require('cors');
 
 // Import route modules
@@ -22,7 +21,7 @@ const uploadRoutes = require('./upload');
 router.use('/auth', authLimiter, authRoutes);
 router.use('/articles', articleRoutes);
 router.use('/categories', categoryRoutes);
-router.use('/analytics', analyticsLimiter, cacheMiddleware.analytics, analyticsRoutes);
+router.use('/analytics', analyticsLimiter, analyticsRoutes);
 router.use('/upload', uploadLimiter, uploadRoutes);
 
 // Placeholder route for testing
