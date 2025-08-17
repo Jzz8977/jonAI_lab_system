@@ -28,7 +28,9 @@ npm run preview                # Preview production build
 npm test                       # Run Vitest unit tests
 npm run test:watch             # Run tests in watch mode
 npm run test:integration       # Run integration tests
+npm run test:integration:watch # Run integration tests in watch mode
 npm run test:all               # Run both unit and integration tests
+npm run test:ui                # Run tests with UI interface
 npx vue-tsc --noEmit          # Type checking only
 ```
 
@@ -99,7 +101,12 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
 
 ### Frontend Configuration
-The frontend uses Vite with environment-based API configuration in `src/config/index.ts`.
+The frontend uses Vite with environment-based API configuration in `src/config/index.ts`. 
+
+### Development Proxy
+The Vite dev server (port 5173) automatically proxies API requests to the backend (port 3000):
+- `/api/*` routes are proxied to backend
+- `/uploads/*` routes are proxied for file access
 
 ## File Upload System
 - **Multer middleware** for handling multipart/form-data

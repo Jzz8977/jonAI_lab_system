@@ -296,4 +296,161 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// GET /api/categories/stats - Get categories with article counts
+router.get('/stats', async (_, res) => {
+  try {
+    const Article = require('../models/Article');
+    const category = new Category();
+    const categories = category.findAll();
+    
+    const categoriesWithStats = categories.map(cat => {
+      const articleCount = Article.count({ category_id: cat.id });
+      const publishedCount = Article.count({ category_id: cat.id, status: 'published' });
+      
+      return {
+        ...cat,
+        article_count: articleCount,
+        published_count: publishedCount
+      };
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        categories: categoriesWithStats,
+        total: categoriesWithStats.length
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error fetching category stats:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'FETCH_CATEGORY_STATS_ERROR',
+        message: 'Failed to fetch category statistics'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// GET /api/categories/:id/articles - Get articles for a specific category
+router.get('/:id/articles', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, limit, offset, orderBy, orderDir } = req.query;
+    
+    if (!id || isNaN(parseInt(id))) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_CATEGORY_ID',
+          message: 'Valid category ID is required'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Check if category exists
+    const category = new Category();
+    const categoryData = category.findById(parseInt(id));
+    
+    if (!categoryData) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'CATEGORY_NOT_FOUND',
+          message: 'Category not found'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    const Article = require('../models/Article');
+    const options = {
+      category_id: parseInt(id)
+    };
+    
+    if (status) options.status = status;
+    if (limit) options.limit = parseInt(limit);
+    if (offset) options.offset = parseInt(offset);
+    if (orderBy) options.orderBy = orderBy;
+    if (orderDir) options.orderDir = orderDir;
+    
+    const articles = Article.findAll(options);
+    const total = Article.count({ category_id: parseInt(id), status });
+    
+    res.json({
+      success: true,
+      data: {
+        category: categoryData,
+        articles,
+        total,
+        limit: options.limit || null,
+        offset: options.offset || 0
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error fetching category articles:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'FETCH_CATEGORY_ARTICLES_ERROR',
+        message: 'Failed to fetch category articles'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// GET /api/categories/slug/:slug - Get category by slug
+router.get('/slug/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    
+    if (!slug) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_SLUG',
+          message: 'Valid category slug is required'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    const category = new Category();
+    const categoryData = category.findBySlug(slug);
+    
+    if (!categoryData) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'CATEGORY_NOT_FOUND',
+          message: 'Category not found'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: categoryData,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error fetching category by slug:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'FETCH_CATEGORY_ERROR',
+        message: 'Failed to fetch category'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 module.exports = router;
