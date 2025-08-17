@@ -717,8 +717,8 @@ router.post('/analytics/articles/:id/status', async (req, res) => {
   }
 });
 
-// GET /api/public/articles/:id/like-status - Check if user has liked article (no auth required)
-router.get('/analytics/articles/:id/status', async (req, res) => {
+// GET /api/public/articles/:id/status - Check if user has liked article (no auth required)
+router.get('/analytics/articles/:id/like', async (req, res) => {
   try {
     const articleId = parseInt(req.params.id);
     
