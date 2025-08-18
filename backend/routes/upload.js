@@ -21,8 +21,7 @@ router.post('/thumbnail', authenticate, upload.single('thumbnail'), handleUpload
     }
 
     // Generate URL for the uploaded file
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
-    const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    const fileUrl = `/uploads/${req.file.filename}`;
 
     res.status(201).json({
       success: true,
